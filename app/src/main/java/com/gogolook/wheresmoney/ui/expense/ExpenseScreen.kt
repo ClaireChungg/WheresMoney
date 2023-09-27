@@ -1,13 +1,36 @@
 package com.gogolook.wheresmoney.ui.expense
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import com.gogolook.wheresmoney.data.Category
 import com.gogolook.wheresmoney.data.Expense
+import com.gogolook.wheresmoney.ui.components.PrimaryStandardButton
+import com.gogolook.wheresmoney.ui.theme.LocalColors
+import com.gogolook.wheresmoney.ui.theme.LocalTypography
 import java.util.Date
 
 /**
@@ -106,8 +129,74 @@ fun AmountCalculator(defaultAmount: Int, onPick: (amount: Int) -> Unit) {
  * @param onPick: callback when user pick a category
  */
 @Composable
-fun CategoryPicker(categories: List<Category>, defaultCategory: Category?, onPick: (category: Category) -> Unit) {
+fun CategoryPicker(
+    categories: List<Category>,
+    defaultCategory: Category?,
+    onPick: (category: Category) -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .background(LocalColors.current.surfacePrimary, MaterialTheme.shapes.large)
+            .padding(32.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        var selectedCategory by remember { mutableStateOf(defaultCategory) }
 
+        LazyColumn(
+            modifier = Modifier
+        ) {
+            items(items = categories) { category ->
+                CategoryItem(
+                    category = category,
+                    isSelected = category == selectedCategory,
+                    onItemClicked = { selectedCategory = category}
+                )
+            }
+        }
+        PrimaryStandardButton(
+            modifier = Modifier
+                .padding(top = 32.dp)
+                .align(Alignment.End),
+            text = "OK",
+            onClick = {
+                onPick(selectedCategory ?: categories[0])
+            }
+        )
+    }
+}
+
+@Composable
+private fun CategoryItem(category: Category, isSelected: Boolean, onItemClicked: () -> Unit) {
+    ListItem(
+        modifier = Modifier
+            .padding(vertical = 6.dp)
+            .background(Color.White, MaterialTheme.shapes.large)
+            .clickable { onItemClicked() },
+        headlineContent = {
+            Text(
+                modifier = Modifier,
+                text = category.name,
+                color = Color(category.color)
+            )
+        },
+        colors = ListItemDefaults.colors(
+            containerColor = Color.Transparent,
+        ),
+        trailingContent = {
+            if (isSelected) {
+                Text(
+                    modifier = Modifier
+                        .background(LocalColors.current.primary, CircleShape)
+                        .size(24.dp)
+                        .padding(horizontal = 4.dp),
+                    text = "✔",
+                    color = LocalColors.current.onSurfaceHighlightPrimary,
+                    fontSize = LocalTypography.current.m4.fontSize
+                )
+            }
+        }
+    )
 }
 
 /**
