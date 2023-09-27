@@ -53,20 +53,25 @@ private val defaultColors = WMColors(
     reddot = Color(0xFFFF004F),
     background = Color(0xFFF8F8F8),
     mask = Color(0x19000000),
-    surfacePrimary = Color(0xFFFFFFFF),
+    surfacePrimary = Color(0xFFFFEBEE),
     surfaceSecondary = Color(0x07000000),
     surfaceTertiary = Color(0xFFF4F4F4),
+    surfaceVariant = Color(0xFFDCE5DB),
     onSurfaceBlack = Color(0xFF000000),
     onSurfacePrimary = Color(0xB2000000),
     onSurfaceSecondary = Color(0x7F000000),
     onSurfaceTertiary = Color(0x4C000000),
+    onSurfaceVariant = Color(0xFF414942),
     onSurfaceQuaternary = Color(0x33000000),
     onSurfaceLimited = Color(0x19000000),
     onSurfaceLimitedSecondary = Color(0x0C000000),
     onSurfaceHighlightPrimary = Color(0xFFFFFFFF),
     onSurfaceHighlightSecondary = Color(0xB2FFFFFF),
     onSurfaceHighlightTertiary = Color(0x7FFFFFFF),
-    isLight = true
+    isLight = true,
+    red = Color(0xFFE91E63),
+    green = Color(0xFF009688),
+    blue = Color(0xFF03A9F4)
 )
 
 val LocalColors = compositionLocalOf { defaultColors }
