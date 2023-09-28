@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.dp
 import com.gogolook.wheresmoney.data.Category
 import com.gogolook.wheresmoney.data.Expense
 import com.gogolook.wheresmoney.ui.components.PrimaryStandardButton
+import com.gogolook.wheresmoney.ui.main.dateFormatter
 import com.gogolook.wheresmoney.ui.theme.LocalColors
 import com.gogolook.wheresmoney.ui.theme.LocalTypography
 import java.util.Date
@@ -83,7 +84,70 @@ fun ExpenseView(expense: Expense?, categories: List<Category>, onSave: (expense:
     val categoryId = remember { mutableStateOf(0) }
     val amount = remember { mutableStateOf(0) }
 
-    // TODO Implement ExpenseView
+    Column(
+        modifier = Modifier
+            .background(LocalColors.current.background)
+            .padding(16.dp)
+    ) {
+        ListItem(
+            modifier = Modifier
+                .padding(vertical = 6.dp)
+                .background(Color.White, MaterialTheme.shapes.small)
+                .clickable { },
+            headlineContent = { Text(text = expense?.name ?: "") },
+            overlineContent = { Text(text = "Name") },
+            colors = ListItemDefaults.colors(
+                containerColor = Color.Transparent,
+            )
+        )
+        ListItem(
+            modifier = Modifier
+                .padding(vertical = 6.dp)
+                .background(Color.White, MaterialTheme.shapes.small)
+                .clickable { shouldShowCategoryPicker.value = true },
+            headlineContent = {
+                Text(
+                    text = expense?.category?.name ?: "",
+                    color = Color(expense?.category?.color ?: 0)
+                )
+            },
+            overlineContent = { Text(text = "Category") },
+            colors = ListItemDefaults.colors(
+                containerColor = Color.Transparent,
+            )
+        )
+        ListItem(
+            modifier = Modifier
+                .padding(vertical = 6.dp)
+                .background(Color.White, MaterialTheme.shapes.small)
+                .clickable(onClick = { shouldShowAmountCalculator.value = true }),
+            headlineContent = { Text(text = expense?.amount.toString()) },
+            overlineContent = { Text(text = "Amount") },
+            colors = ListItemDefaults.colors(
+                containerColor = Color.Transparent,
+            )
+        )
+        ListItem(
+            modifier = Modifier
+                .padding(vertical = 6.dp)
+                .background(Color.White, MaterialTheme.shapes.small)
+                .clickable { shouldShowDatePicker.value = true },
+            headlineContent = { Text(text = dateFormatter.format(expense?.date ?: Date().time)) },
+            overlineContent = { Text(text = "Date") },
+            colors = ListItemDefaults.colors(
+                containerColor = Color.Transparent,
+            )
+        )
+        PrimaryStandardButton(
+            modifier = Modifier
+                .padding(top = 32.dp)
+                .align(Alignment.End),
+            text = "✔",
+            onClick = {
+                onSave(expense!!)
+            }
+        )
+    }
 
     AnimatedVisibility(visible = shouldShowCategoryPicker.value) {
         DatePicker(expense?.date) {
@@ -150,7 +214,7 @@ fun CategoryPicker(
                 CategoryItem(
                     category = category,
                     isSelected = category == selectedCategory,
-                    onItemClicked = { selectedCategory = category}
+                    onItemClicked = { selectedCategory = category }
                 )
             }
         }
