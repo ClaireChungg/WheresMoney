@@ -5,14 +5,20 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.ArrowBack
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -29,6 +35,8 @@ import androidx.compose.ui.unit.dp
 import com.gogolook.wheresmoney.data.Category
 import com.gogolook.wheresmoney.data.Expense
 import com.gogolook.wheresmoney.ui.components.PrimaryStandardButton
+import com.gogolook.wheresmoney.ui.components.Toolbar
+import com.gogolook.wheresmoney.ui.components.ToolbarAction
 import com.gogolook.wheresmoney.ui.main.dateFormatter
 import com.gogolook.wheresmoney.ui.theme.LocalColors
 import com.gogolook.wheresmoney.ui.theme.LocalTypography
@@ -44,6 +52,7 @@ import java.util.Date
 @Composable
 fun ExpenseScreen(
     viewModel: ExpenseViewModel,
+    back: () -> Unit = {},
     expenseId: Int,
     onCompleted: () -> Unit = {},
 ) {
@@ -54,6 +63,7 @@ fun ExpenseScreen(
     ExpenseView(
         expense = viewModel.expense.value,
         categories = viewModel.categories.value,
+        back = back,
         onSave = { expense ->
             viewModel.saveExpense(expense)
             onCompleted()
@@ -75,8 +85,14 @@ fun ExpenseScreen(
  * @param categories: the list of categories
  * @param onSave: callback when user finish creating or editing an expense
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ExpenseView(expense: Expense?, categories: List<Category>, onSave: (expense: Expense) -> Unit) {
+fun ExpenseView(
+    expense: Expense?,
+    categories: List<Category>,
+    back: () -> Unit = {},
+    onSave: (expense: Expense) -> Unit
+) {
     val shouldShowDatePicker = remember { mutableStateOf(false) }
     val shouldShowCategoryPicker = remember { mutableStateOf(false) }
     val shouldShowAmountCalculator = remember { mutableStateOf(false) }
@@ -84,87 +100,114 @@ fun ExpenseView(expense: Expense?, categories: List<Category>, onSave: (expense:
     val categoryId = remember { mutableStateOf(0) }
     val amount = remember { mutableStateOf(0) }
 
-    Column(
-        modifier = Modifier
-            .background(LocalColors.current.background)
-            .padding(16.dp)
-    ) {
-        ListItem(
-            modifier = Modifier
-                .padding(vertical = 6.dp)
-                .background(Color.White, MaterialTheme.shapes.small)
-                .clickable { },
-            headlineContent = { Text(text = expense?.name ?: "") },
-            overlineContent = { Text(text = "Name") },
-            colors = ListItemDefaults.colors(
-                containerColor = Color.Transparent,
+    Scaffold(
+        modifier = Modifier.fillMaxSize(),
+        topBar = {
+            Toolbar(
+                headerAction = ToolbarAction(
+                    image = Icons.Outlined.ArrowBack,
+                    onClick = { back() }
+                ),
+                title = "Expense",
             )
-        )
-        ListItem(
+        }
+    ) { paddingValues ->
+        Column(
             modifier = Modifier
-                .padding(vertical = 6.dp)
-                .background(Color.White, MaterialTheme.shapes.small)
-                .clickable { shouldShowCategoryPicker.value = true },
-            headlineContent = {
-                Text(
-                    text = expense?.category?.name ?: "",
-                    color = Color(expense?.category?.color ?: 0)
+                .fillMaxSize()
+                .padding(paddingValues = paddingValues)
+                .background(LocalColors.current.background)
+                .padding(16.dp)
+        ) {
+            ListItem(
+                modifier = Modifier
+                    .padding(vertical = 6.dp)
+                    .background(Color.White, MaterialTheme.shapes.small)
+                    .clickable { },
+                headlineContent = { Text(text = expense?.name ?: "") },
+                overlineContent = { Text(text = "Name") },
+                colors = ListItemDefaults.colors(
+                    containerColor = Color.Transparent,
                 )
-            },
-            overlineContent = { Text(text = "Category") },
-            colors = ListItemDefaults.colors(
-                containerColor = Color.Transparent,
             )
-        )
-        ListItem(
-            modifier = Modifier
-                .padding(vertical = 6.dp)
-                .background(Color.White, MaterialTheme.shapes.small)
-                .clickable(onClick = { shouldShowAmountCalculator.value = true }),
-            headlineContent = { Text(text = expense?.amount.toString()) },
-            overlineContent = { Text(text = "Amount") },
-            colors = ListItemDefaults.colors(
-                containerColor = Color.Transparent,
+            ListItem(
+                modifier = Modifier
+                    .padding(vertical = 6.dp)
+                    .background(Color.White, MaterialTheme.shapes.small)
+                    .clickable { shouldShowCategoryPicker.value = true },
+                headlineContent = {
+                    Text(
+                        text = expense?.category?.name ?: "",
+                        color = Color(expense?.category?.color ?: 0)
+                    )
+                },
+                overlineContent = { Text(text = "Category") },
+                colors = ListItemDefaults.colors(
+                    containerColor = Color.Transparent,
+                )
             )
-        )
-        ListItem(
-            modifier = Modifier
-                .padding(vertical = 6.dp)
-                .background(Color.White, MaterialTheme.shapes.small)
-                .clickable { shouldShowDatePicker.value = true },
-            headlineContent = { Text(text = dateFormatter.format(expense?.date ?: Date().time)) },
-            overlineContent = { Text(text = "Date") },
-            colors = ListItemDefaults.colors(
-                containerColor = Color.Transparent,
+            ListItem(
+                modifier = Modifier
+                    .padding(vertical = 6.dp)
+                    .background(Color.White, MaterialTheme.shapes.small)
+                    .clickable(onClick = { shouldShowAmountCalculator.value = true }),
+                headlineContent = { Text(text = expense?.amount.toString()) },
+                overlineContent = { Text(text = "Amount") },
+                colors = ListItemDefaults.colors(
+                    containerColor = Color.Transparent,
+                )
             )
-        )
-        PrimaryStandardButton(
-            modifier = Modifier
-                .padding(top = 32.dp)
-                .align(Alignment.End),
-            text = "✔",
-            onClick = {
-                onSave(expense!!)
-            }
-        )
+            ListItem(
+                modifier = Modifier
+                    .padding(vertical = 6.dp)
+                    .background(Color.White, MaterialTheme.shapes.small)
+                    .clickable { shouldShowDatePicker.value = true },
+                headlineContent = {
+                    Text(
+                        text = dateFormatter.format(
+                            expense?.date ?: Date().time
+                        )
+                    )
+                },
+                overlineContent = { Text(text = "Date") },
+                colors = ListItemDefaults.colors(
+                    containerColor = Color.Transparent,
+                )
+            )
+            PrimaryStandardButton(
+                modifier = Modifier
+                    .padding(top = 32.dp)
+                    .align(Alignment.End),
+                text = "✔",
+                onClick = {
+                    onSave(expense!!)
+                }
+            )
+        }
     }
 
-    AnimatedVisibility(visible = shouldShowCategoryPicker.value) {
-        DatePicker(expense?.date) {
-            date.value = it
-            shouldShowDatePicker.value = false
+    AnimatedVisibility(visible = shouldShowDatePicker.value) {
+        AlertDialog(onDismissRequest = { shouldShowDatePicker.value = false }) {
+            DatePicker(expense?.date) {
+                date.value = it
+                shouldShowDatePicker.value = false
+            }
         }
     }
     AnimatedVisibility(visible = shouldShowCategoryPicker.value) {
-        CategoryPicker(categories, expense?.category) {
-            categoryId.value = it.id
-            shouldShowCategoryPicker.value = false
+        AlertDialog(onDismissRequest = { shouldShowCategoryPicker.value = false }) {
+            CategoryPicker(categories, expense?.category) {
+                categoryId.value = it.id
+                shouldShowCategoryPicker.value = false
+            }
         }
     }
     AnimatedVisibility(visible = shouldShowAmountCalculator.value) {
-        AmountCalculator(amount.value) {
-            amount.value = it
-            shouldShowAmountCalculator.value = false
+        AlertDialog(onDismissRequest = { shouldShowAmountCalculator.value = false }) {
+            AmountCalculator(amount.value) {
+                amount.value = it
+                shouldShowAmountCalculator.value = false
+            }
         }
     }
 }
@@ -200,7 +243,7 @@ fun CategoryPicker(
 ) {
     Column(
         modifier = Modifier
-            .background(LocalColors.current.surfacePrimary, MaterialTheme.shapes.large)
+            .background(LocalColors.current.surfacePrimary, MaterialTheme.shapes.small)
             .padding(32.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
@@ -235,7 +278,7 @@ private fun CategoryItem(category: Category, isSelected: Boolean, onItemClicked:
     ListItem(
         modifier = Modifier
             .padding(vertical = 6.dp)
-            .background(Color.White, MaterialTheme.shapes.large)
+            .background(Color.White, MaterialTheme.shapes.small)
             .clickable { onItemClicked() },
         headlineContent = {
             Text(

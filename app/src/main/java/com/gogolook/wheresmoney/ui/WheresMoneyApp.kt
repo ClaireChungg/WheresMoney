@@ -88,6 +88,7 @@ fun NavGraph(
         ) {
             ExpenseScreen(
                 viewModel = hiltViewModel(),
+                back = navActions.back,
                 expenseId = it.expenseId ?: 0,
                 onCompleted = navActions.back,
             )
