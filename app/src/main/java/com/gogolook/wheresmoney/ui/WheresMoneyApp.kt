@@ -77,6 +77,7 @@ fun NavGraph(
         ) {
             CategoryScreen(
                 viewModel = hiltViewModel(),
+                back = { navController.navigateUp() },
                 categoryId = it.categoryId ?: 0,
                 onCompleted = navActions.back,
             )

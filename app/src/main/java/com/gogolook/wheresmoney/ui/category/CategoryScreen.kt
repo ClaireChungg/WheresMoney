@@ -2,17 +2,29 @@ package com.gogolook.wheresmoney.ui.category
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.ArrowBack
+import androidx.compose.material.icons.outlined.Check
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -23,13 +35,17 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.gogolook.wheresmoney.data.Category
+import com.gogolook.wheresmoney.ui.components.FloatingActionButton
 import com.gogolook.wheresmoney.ui.components.PrimaryStandardButton
+import com.gogolook.wheresmoney.ui.components.Toolbar
+import com.gogolook.wheresmoney.ui.components.ToolbarAction
 import com.gogolook.wheresmoney.ui.theme.LocalColors
 
 /**
@@ -42,13 +58,14 @@ import com.gogolook.wheresmoney.ui.theme.LocalColors
 @Composable
 fun CategoryScreen(
     viewModel: CategoryViewModel,
+    back: () -> Unit = {},
     categoryId: Int,
     onCompleted: () -> Unit = {},
 ) {
     LaunchedEffect(key1 = categoryId) {
         viewModel.fetchCategory(categoryId)
     }
-    CategoryView(viewModel.category.value, onSave = { category ->
+    CategoryView(viewModel.category.value, back, onSave = { category ->
         viewModel.saveCategory(category)
         onCompleted()
     })
@@ -65,18 +82,86 @@ fun CategoryScreen(
  * @param category: the category to be edited, or null if creating a new category
  * @param onSave: callback when user finish creating or editing a category
  */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CategoryView(category: Category?, onSave: (category: Category) -> Unit) {
+fun CategoryView(category: Category?, back: () -> Unit = {}, onSave: (category: Category) -> Unit) {
     val shouldShowColorPicker = remember { mutableStateOf(false) }
-    val color = remember { mutableStateOf(Color.Red) }
+    val name = remember { mutableStateOf(category?.name ?: "") }
+    val color = remember { mutableStateOf(Color(category?.color ?: Color.Red.toArgb().toLong())) }
 
-    // TODO Implement CategoryView
+    Scaffold(
+        modifier = Modifier.fillMaxSize(),
+        topBar = {
+            Toolbar(
+                headerAction = ToolbarAction(
+                    image = Icons.Outlined.ArrowBack,
+                    onClick = { back() }
+                ),
+                title = "Category",
+            )
+        },
+        floatingActionButton = {
+            FloatingActionButton(icon = Icons.Outlined.Check) {
+                onSave(Category(category?.id ?: 0, name.value, color.value.toArgb().toLong()))
+            }
+        }
+    ) { paddingValues ->
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(paddingValues = paddingValues)
+                .background(LocalColors.current.background)
+                .padding(16.dp)
+        ) {
+            ListItem(
+                modifier = Modifier
+                    .padding(vertical = 6.dp)
+                    .background(Color.White, MaterialTheme.shapes.small),
+                headlineContent = {
+                    TextField(
+                        value = name.value,
+                        onValueChange = { name.value = it },
+                        modifier = Modifier,
+                        singleLine = true,
+                        colors = TextFieldDefaults.colors(
+                            focusedContainerColor = Color.Transparent,
+                            unfocusedContainerColor = Color.Transparent,
+                        )
+                    )
+                },
+                overlineContent = { Text(text = "Name") },
+                colors = ListItemDefaults.colors(
+                    containerColor = Color.Transparent,
+                )
+            )
+            ListItem(
+                modifier = Modifier
+                    .padding(vertical = 6.dp)
+                    .background(Color.White, MaterialTheme.shapes.small)
+                    .clickable { shouldShowColorPicker.value = true },
+                headlineContent = {
+                    Box(
+                        modifier = Modifier
+                            .width(48.dp)
+                            .height(24.dp)
+                            .background(color.value)
+                    )
+                },
+                overlineContent = { Text(text = "Color") },
+                colors = ListItemDefaults.colors(
+                    containerColor = Color.Transparent,
+                )
+            )
+        }
+    }
 
     AnimatedVisibility(visible = shouldShowColorPicker.value) {
-        ColorPicker(defaultColor = color.value, onPick = {
-            color.value = it
-            shouldShowColorPicker.value = false
-        })
+        AlertDialog(onDismissRequest = { shouldShowColorPicker.value = false }) {
+            ColorPicker(defaultColor = color.value, onPick = {
+                color.value = it
+                shouldShowColorPicker.value = false
+            })
+        }
     }
 }
 
@@ -130,7 +215,7 @@ fun ColorPicker(defaultColor: Color? = null, onPick: (color: Color) -> Unit) {
         )
         PrimaryStandardButton(
             modifier = Modifier
-                .padding(top = 16.dp)
+                .padding(top = 32.dp)
                 .align(Alignment.End),
             text = "OK",
             onClick = {
