@@ -1,7 +1,28 @@
 package com.gogolook.wheresmoney.ui.setting
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.icons.outlined.ArrowBack
+import androidx.compose.material3.ListItem
+import androidx.compose.material3.ListItemDefaults
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
+import com.gogolook.wheresmoney.ui.components.FloatingActionButton
+import com.gogolook.wheresmoney.ui.components.Toolbar
+import com.gogolook.wheresmoney.ui.components.ToolbarAction
+import com.gogolook.wheresmoney.ui.theme.LocalColors
 
 /**
  * A composable that provides
@@ -26,5 +47,47 @@ fun SettingScreen(
     }
     val categories = viewModel.categories.value
 
-    // TODO Implement Categories List view
+    Scaffold(
+        modifier = Modifier.fillMaxSize(),
+        topBar = {
+            Toolbar(
+                headerAction = ToolbarAction(
+                    image = Icons.Outlined.ArrowBack,
+                    onClick = { back() }
+                ),
+                title = "Categories",
+            )
+        },
+        floatingActionButton = {
+            FloatingActionButton(icon = Icons.Outlined.Add) {
+                createCategory()
+            }
+        }
+    ) { paddingValues ->
+        LazyColumn(
+            modifier = Modifier
+                .padding(paddingValues)
+                .fillMaxSize()
+                .background(LocalColors.current.background)
+                .padding(16.dp)
+        ) {
+            items(items = categories) { category ->
+                ListItem(
+                    modifier = Modifier
+                        .padding(vertical = 6.dp)
+                        .background(Color.White, MaterialTheme.shapes.small)
+                        .clickable { updateCategory(category.id) },
+                    headlineContent = {
+                        Text(
+                            text = category.name,
+                            color = Color(category.color)
+                        )
+                    },
+                    colors = ListItemDefaults.colors(
+                        containerColor = Color.Transparent,
+                    )
+                )
+            }
+        }
+    }
 }
