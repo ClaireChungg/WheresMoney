@@ -5,15 +5,24 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ArrowBack
+import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
@@ -23,17 +32,18 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.gogolook.wheresmoney.data.Category
 import com.gogolook.wheresmoney.data.Expense
+import com.gogolook.wheresmoney.ui.components.FloatingActionButton
 import com.gogolook.wheresmoney.ui.components.PrimaryStandardButton
 import com.gogolook.wheresmoney.ui.components.Toolbar
 import com.gogolook.wheresmoney.ui.components.ToolbarAction
@@ -64,6 +74,7 @@ fun ExpenseScreen(
         expense = viewModel.expense.value,
         categories = viewModel.categories.value,
         back = back,
+        calculate = { text -> viewModel.calculate(text) },
         onSave = { expense ->
             viewModel.saveExpense(expense)
             onCompleted()
@@ -91,14 +102,16 @@ fun ExpenseView(
     expense: Expense?,
     categories: List<Category>,
     back: () -> Unit = {},
+    calculate: (String) -> Int,
     onSave: (expense: Expense) -> Unit
 ) {
     val shouldShowDatePicker = remember { mutableStateOf(false) }
     val shouldShowCategoryPicker = remember { mutableStateOf(false) }
     val shouldShowAmountCalculator = remember { mutableStateOf(false) }
-    val date = remember { mutableStateOf(Date()) }
-    val categoryId = remember { mutableStateOf(0) }
-    val amount = remember { mutableStateOf(0) }
+    val name = remember { mutableStateOf(expense?.name ?: "") }
+    val date = remember { mutableStateOf(expense?.date ?: Date()) }
+    val categoryId = remember { mutableIntStateOf(expense?.categoryId ?: 0) }
+    val amount = remember { mutableIntStateOf(expense?.amount ?: 0) }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -110,6 +123,19 @@ fun ExpenseView(
                 ),
                 title = "Expense",
             )
+        },
+        floatingActionButton = {
+            FloatingActionButton(icon = Icons.Outlined.Check) {
+                onSave(
+                    Expense(
+                        id = expense?.id ?: 0,
+                        name = name.value,
+                        amount = amount.intValue,
+                        categoryId = categoryId.intValue,
+                        date = date.value
+                    )
+                )
+            }
         }
     ) { paddingValues ->
         Column(
@@ -124,7 +150,7 @@ fun ExpenseView(
                     .padding(vertical = 6.dp)
                     .background(Color.White, MaterialTheme.shapes.small)
                     .clickable { },
-                headlineContent = { Text(text = expense?.name ?: "") },
+                headlineContent = { Text(text = name.value) },
                 overlineContent = { Text(text = "Name") },
                 colors = ListItemDefaults.colors(
                     containerColor = Color.Transparent,
@@ -137,8 +163,12 @@ fun ExpenseView(
                     .clickable { shouldShowCategoryPicker.value = true },
                 headlineContent = {
                     Text(
-                        text = expense?.category?.name ?: "",
-                        color = Color(expense?.category?.color ?: 0)
+                        text = categories.find { it.id == categoryId.intValue }?.name ?: "",
+                        color = categories.find { it.id == categoryId.intValue }?.color?.let {
+                            Color(
+                                it
+                            )
+                        } ?: Color.Transparent
                     )
                 },
                 overlineContent = { Text(text = "Category") },
@@ -151,7 +181,7 @@ fun ExpenseView(
                     .padding(vertical = 6.dp)
                     .background(Color.White, MaterialTheme.shapes.small)
                     .clickable(onClick = { shouldShowAmountCalculator.value = true }),
-                headlineContent = { Text(text = expense?.amount.toString()) },
+                headlineContent = { Text(text = amount.intValue.toString()) },
                 overlineContent = { Text(text = "Amount") },
                 colors = ListItemDefaults.colors(
                     containerColor = Color.Transparent,
@@ -164,24 +194,13 @@ fun ExpenseView(
                     .clickable { shouldShowDatePicker.value = true },
                 headlineContent = {
                     Text(
-                        text = dateFormatter.format(
-                            expense?.date ?: Date().time
-                        )
+                        text = dateFormatter.format(date.value)
                     )
                 },
                 overlineContent = { Text(text = "Date") },
                 colors = ListItemDefaults.colors(
                     containerColor = Color.Transparent,
                 )
-            )
-            PrimaryStandardButton(
-                modifier = Modifier
-                    .padding(top = 32.dp)
-                    .align(Alignment.End),
-                text = "✔",
-                onClick = {
-                    onSave(expense!!)
-                }
             )
         }
     }
@@ -197,15 +216,15 @@ fun ExpenseView(
     AnimatedVisibility(visible = shouldShowCategoryPicker.value) {
         AlertDialog(onDismissRequest = { shouldShowCategoryPicker.value = false }) {
             CategoryPicker(categories, expense?.category) {
-                categoryId.value = it.id
+                categoryId.intValue = it.id
                 shouldShowCategoryPicker.value = false
             }
         }
     }
     AnimatedVisibility(visible = shouldShowAmountCalculator.value) {
         AlertDialog(onDismissRequest = { shouldShowAmountCalculator.value = false }) {
-            AmountCalculator(amount.value) {
-                amount.value = it
+            AmountCalculator(amount.intValue, calculate) {
+                amount.intValue = it
                 shouldShowAmountCalculator.value = false
             }
         }
@@ -222,8 +241,101 @@ fun ExpenseView(
  * @param onPick: callback when user pick an amount
  */
 @Composable
-fun AmountCalculator(defaultAmount: Int, onPick: (amount: Int) -> Unit) {
+fun AmountCalculator(
+    defaultAmount: Int,
+    calculate: (String) -> Int,
+    onPick: (amount: Int) -> Unit
+) {
+    Column(
+        modifier = Modifier
+            .background(LocalColors.current.surfacePrimary, MaterialTheme.shapes.small)
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        val newAmount = remember { mutableIntStateOf(defaultAmount) }
+        val formula = remember { mutableStateOf(newAmount.intValue.toString()) }
 
+        ListItem(
+            modifier = Modifier
+                .padding(vertical = 16.dp)
+                .background(LocalColors.current.green200, MaterialTheme.shapes.small),
+            headlineContent = {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End
+                ) {
+                    Text(
+                        text = formula.value,
+                        fontSize = 24.sp,
+                    )
+                }
+            },
+            colors = ListItemDefaults.colors(
+                containerColor = Color.Transparent,
+            )
+        )
+
+        CalculatorButtonGrid { text ->
+            when (text) {
+                "=" -> {
+                    newAmount.intValue = calculate(formula.value)
+                    formula.value = newAmount.intValue.toString()
+                }
+
+                "C" -> formula.value = "0"
+                "←" -> formula.value = formula.value.dropLast(1)
+                else -> formula.value += text
+            }
+        }
+
+        PrimaryStandardButton(
+            modifier = Modifier
+                .padding(top = 32.dp)
+                .align(Alignment.End),
+            text = "OK",
+            onClick = {
+                newAmount.intValue = calculate(formula.value)
+                onPick(newAmount.intValue)
+            }
+        )
+    }
+}
+
+@Composable
+fun CalculatorButton(
+    text: String,
+    onClick: (String) -> Unit
+) {
+    Button(
+        modifier = Modifier
+            .padding(4.dp)
+            .size(36.dp),
+        colors = ButtonDefaults.buttonColors(
+            containerColor = LocalColors.current.greenA100,
+            contentColor = Color.DarkGray
+        ),
+        contentPadding = PaddingValues(0.dp),
+        onClick = { onClick(text) }
+    ) {
+        Text(text = text, fontSize = 24.sp)
+    }
+}
+
+@Composable
+fun CalculatorButtonGrid(
+    onClick: (String) -> Unit
+) {
+    val buttonTexts =
+        listOf("7", "8", "9", "+", "4", "5", "6", "-", "1", "2", "3", "*", "C", "0", "←", "=")
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(4),
+        modifier = Modifier.fillMaxWidth(),
+        contentPadding = PaddingValues(4.dp),
+    ) {
+        items(items = buttonTexts) { buttonText ->
+            CalculatorButton(text = buttonText, onClick = onClick)
+        }
+    }
 }
 
 /**

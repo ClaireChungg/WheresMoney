@@ -71,7 +71,9 @@ private val defaultColors = WMColors(
     isLight = true,
     red = Color(0xFFE91E63),
     green = Color(0xFF009688),
-    blue = Color(0xFF03A9F4)
+    blue = Color(0xFF03A9F4),
+    greenA100 = Color(0xFFB9F6CA),
+    green200 = Color(0xFFA5D6A7),
 )
 
 val LocalColors = compositionLocalOf { defaultColors }

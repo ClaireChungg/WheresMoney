@@ -2,7 +2,6 @@ package com.gogolook.wheresmoney.ui.expense
 
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.ui.graphics.Color
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.gogolook.wheresmoney.data.Category
@@ -13,7 +12,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.util.Date
 import javax.inject.Inject
 
 @HiltViewModel
@@ -46,5 +44,25 @@ class ExpenseViewModel @Inject constructor(
                 expenseRepository.insert(expense)
             }
         }
+    }
+
+    fun calculate(formula: String): Int {
+        val numbers = formula.split("+", "-", "*").map { it.toInt() }
+        val operators = formula.split("0", "1", "2", "3", "4", "5", "6", "7", "8", "9")
+            .filter { it.isNotEmpty() }
+        var newAmount = 0
+
+        numbers.forEachIndexed { index, number ->
+            if (index == 0) {
+                newAmount += number
+            } else {
+                when (operators[index - 1]) {
+                    "+" -> newAmount += number
+                    "-" -> newAmount -= number
+                    "*" -> newAmount *= number
+                }
+            }
+        }
+        return newAmount
     }
 }

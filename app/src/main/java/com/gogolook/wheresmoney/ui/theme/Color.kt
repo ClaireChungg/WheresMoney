@@ -40,6 +40,8 @@ class WMColors(
     val red: Color,
     val green: Color,
     val blue: Color,
+    val greenA100: Color,
+    val green200: Color,
 
     val rippleColor: Color = onSurfaceLimitedSecondary,
 )
