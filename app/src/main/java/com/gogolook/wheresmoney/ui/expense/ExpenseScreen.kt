@@ -108,10 +108,17 @@ fun ExpenseView(
     val shouldShowDatePicker = remember { mutableStateOf(false) }
     val shouldShowCategoryPicker = remember { mutableStateOf(false) }
     val shouldShowAmountCalculator = remember { mutableStateOf(false) }
-    val name = remember { mutableStateOf(expense?.name ?: "") }
-    val date = remember { mutableStateOf(expense?.date ?: Date()) }
-    val categoryId = remember { mutableIntStateOf(expense?.categoryId ?: 0) }
-    val amount = remember { mutableIntStateOf(expense?.amount ?: 0) }
+    val name = remember { mutableStateOf("") }
+    val date = remember { mutableStateOf(Date()) }
+    val categoryId = remember { mutableIntStateOf(0) }
+    val amount = remember { mutableIntStateOf(0) }
+
+    LaunchedEffect(key1 = expense) {
+        name.value = expense?.name ?: ""
+        date.value = expense?.date ?: Date()
+        categoryId.intValue = expense?.categoryId ?: 0
+        amount.intValue = expense?.amount ?: 0
+    }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),

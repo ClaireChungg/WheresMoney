@@ -38,7 +38,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.gogolook.wheresmoney.data.Category
@@ -86,8 +85,13 @@ fun CategoryScreen(
 @Composable
 fun CategoryView(category: Category?, back: () -> Unit = {}, onSave: (category: Category) -> Unit) {
     val shouldShowColorPicker = remember { mutableStateOf(false) }
-    val name = remember { mutableStateOf(category?.name ?: "") }
-    val color = remember { mutableStateOf(Color(category?.color ?: Color.Red.toArgb().toLong())) }
+    val name = remember { mutableStateOf("") }
+    val color = remember { mutableStateOf(Color.Red) }
+
+    LaunchedEffect(key1 = category) {
+        name.value = category?.name ?: ""
+        color.value = Color(category?.color ?: Color.Red.toArgb().toLong())
+    }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
