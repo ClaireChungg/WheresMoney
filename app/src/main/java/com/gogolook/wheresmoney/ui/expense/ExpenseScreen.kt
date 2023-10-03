@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
@@ -18,17 +19,25 @@ import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
 import androidx.compose.material3.ListItem
 import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -50,6 +59,7 @@ import com.gogolook.wheresmoney.ui.components.ToolbarAction
 import com.gogolook.wheresmoney.ui.main.dateFormatter
 import com.gogolook.wheresmoney.ui.theme.LocalColors
 import com.gogolook.wheresmoney.ui.theme.LocalTypography
+import java.util.Calendar
 import java.util.Date
 
 /**
@@ -155,9 +165,19 @@ fun ExpenseView(
             ListItem(
                 modifier = Modifier
                     .padding(vertical = 6.dp)
-                    .background(Color.White, MaterialTheme.shapes.small)
-                    .clickable { },
-                headlineContent = { Text(text = name.value) },
+                    .background(Color.White, MaterialTheme.shapes.small),
+                headlineContent = {
+                    TextField(
+                        value = name.value,
+                        onValueChange = { name.value = it },
+                        modifier = Modifier,
+                        singleLine = true,
+                        colors = TextFieldDefaults.colors(
+                            focusedContainerColor = Color.Transparent,
+                            unfocusedContainerColor = Color.Transparent,
+                        )
+                    )
+                },
                 overlineContent = { Text(text = "Name") },
                 colors = ListItemDefaults.colors(
                     containerColor = Color.Transparent,
@@ -435,5 +455,97 @@ private fun CategoryItem(category: Category, isSelected: Boolean, onItemClicked:
  */
 @Composable
 fun DatePicker(defaultDate: Date?, onPick: (date: Date) -> Unit) {
+    val calendar = Calendar.getInstance()
+    calendar.time = defaultDate ?: Date()
+    val year = remember { mutableIntStateOf(calendar.get(Calendar.YEAR)) }
+    val month = remember { mutableIntStateOf(calendar.get(Calendar.MONTH) + 1) }
+    val day = remember { mutableIntStateOf(calendar.get(Calendar.DAY_OF_MONTH)) }
 
+    val yearList = (calendar.get(Calendar.YEAR) - 5..calendar.get(Calendar.YEAR) + 5).toList()
+    val monthList = (1..12).toList()
+    val dayList = (1..calendar.getActualMaximum(Calendar.DAY_OF_MONTH)).toList()
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(LocalColors.current.surfacePrimary, MaterialTheme.shapes.small)
+            .padding(32.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            DatePickerItem(Modifier.width(100.dp), "Year", year.intValue, yearList) {
+                year.intValue = it
+            }
+            DatePickerItem(Modifier.width(80.dp), "Month", month.intValue, monthList) {
+                month.intValue = it
+            }
+            DatePickerItem(Modifier.width(80.dp), "Day", day.intValue, dayList) {
+                day.intValue = it
+            }
+        }
+        PrimaryStandardButton(
+            modifier = Modifier
+                .padding(top = 32.dp)
+                .align(Alignment.End),
+            text = "OK",
+            onClick = {
+                calendar.set(year.intValue, month.intValue - 1, day.intValue)
+                onPick(calendar.time)
+            }
+        )
+    }
+}
+
+@Composable
+fun DatePickerItem(
+    modifier: Modifier,
+    type: String,
+    defaultItem: Int?,
+    items: List<Int>,
+    onPick: (Int) -> Unit = {}
+) {
+    var expanded by remember { mutableStateOf(false) }
+    var selectedItem by remember { mutableIntStateOf(defaultItem ?: 0) }
+    val icon = if (expanded)
+        Icons.Filled.KeyboardArrowUp
+    else
+        Icons.Filled.KeyboardArrowDown
+
+    Column {
+        OutlinedTextField(
+            modifier = modifier,
+            value = selectedItem.toString(),
+            label = { Text(type) },
+            readOnly = true,
+            singleLine = true,
+            onValueChange = { },
+            trailingIcon = {
+                Icon(
+                    icon,
+                    modifier = Modifier.clickable { expanded = !expanded },
+                    contentDescription = null
+                )
+            }
+        )
+        DropdownMenu(
+            modifier = modifier,
+            expanded = expanded,
+            onDismissRequest = { expanded = false },
+        ) {
+            items.forEach { item ->
+                DropdownMenuItem(
+                    text = { Text(item.toString()) },
+                    onClick = {
+                        expanded = false
+                        selectedItem = item
+                        onPick(selectedItem)
+                    },
+                )
+            }
+        }
+    }
 }
