@@ -10,13 +10,13 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.ArrowBack
 import androidx.compose.material3.ListItem
-import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.gogolook.wheresmoney.ui.components.FloatingActionButton
@@ -75,17 +75,14 @@ fun SettingScreen(
                 ListItem(
                     modifier = Modifier
                         .padding(vertical = 6.dp)
-                        .background(Color.White, MaterialTheme.shapes.small)
+                        .clip(MaterialTheme.shapes.small)
                         .clickable { updateCategory(category.id) },
                     headlineContent = {
                         Text(
                             text = category.name,
                             color = Color(category.color)
                         )
-                    },
-                    colors = ListItemDefaults.colors(
-                        containerColor = Color.Transparent,
-                    )
+                    }
                 )
             }
         }

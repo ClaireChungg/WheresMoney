@@ -17,7 +17,6 @@ import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ListItem
-import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Slider
@@ -34,6 +33,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.text.font.FontWeight
@@ -120,7 +120,7 @@ fun CategoryView(category: Category?, back: () -> Unit = {}, onSave: (category: 
             ListItem(
                 modifier = Modifier
                     .padding(vertical = 6.dp)
-                    .background(Color.White, MaterialTheme.shapes.small),
+                    .clip(MaterialTheme.shapes.small),
                 headlineContent = {
                     TextField(
                         value = name.value,
@@ -134,14 +134,11 @@ fun CategoryView(category: Category?, back: () -> Unit = {}, onSave: (category: 
                     )
                 },
                 overlineContent = { Text(text = "Name") },
-                colors = ListItemDefaults.colors(
-                    containerColor = Color.Transparent,
-                )
             )
             ListItem(
                 modifier = Modifier
                     .padding(vertical = 6.dp)
-                    .background(Color.White, MaterialTheme.shapes.small)
+                    .clip(MaterialTheme.shapes.small)
                     .clickable { shouldShowColorPicker.value = true },
                 headlineContent = {
                     Box(
@@ -152,9 +149,6 @@ fun CategoryView(category: Category?, back: () -> Unit = {}, onSave: (category: 
                     )
                 },
                 overlineContent = { Text(text = "Color") },
-                colors = ListItemDefaults.colors(
-                    containerColor = Color.Transparent,
-                )
             )
         }
     }
@@ -187,7 +181,8 @@ fun ColorPicker(defaultColor: Color? = null, onPick: (color: Color) -> Unit) {
 
     Column(
         modifier = Modifier
-            .background(LocalColors.current.surfacePrimary, MaterialTheme.shapes.large)
+            .clip(MaterialTheme.shapes.small)
+            .background(LocalColors.current.surfacePrimary)
             .padding(32.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
@@ -221,10 +216,7 @@ fun ColorPicker(defaultColor: Color? = null, onPick: (color: Color) -> Unit) {
             modifier = Modifier
                 .padding(top = 32.dp)
                 .align(Alignment.End),
-            text = "OK",
-            onClick = {
-                onPick(selectedColor)
-            }
+            onClick = { onPick(selectedColor) }
         )
     }
 }

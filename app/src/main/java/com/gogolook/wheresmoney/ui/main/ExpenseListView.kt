@@ -9,13 +9,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.ListItem
-import androidx.compose.material3.ListItemDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.gogolook.wheresmoney.data.Expense
@@ -57,7 +57,7 @@ fun ExpenseListItem(expense: Expense, onExpenseClick: () -> Unit) {
     ListItem(
         modifier = Modifier
             .padding(vertical = 6.dp)
-            .background(Color.White, MaterialTheme.shapes.small)
+            .clip(MaterialTheme.shapes.small)
             .clickable { onExpenseClick() },
         headlineContent = { Text(text = expense.name) },
         leadingContent = { Text(text = "\$${expense.amount}") },
@@ -73,9 +73,6 @@ fun ExpenseListItem(expense: Expense, onExpenseClick: () -> Unit) {
                 )
                 Text(text = dateFormatter.format(expense.date))
             }
-        },
-        colors = ListItemDefaults.colors(
-            containerColor = Color.Transparent
-        )
+        }
     )
 }
