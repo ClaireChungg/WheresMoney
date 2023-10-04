@@ -45,24 +45,4 @@ class ExpenseViewModel @Inject constructor(
             }
         }
     }
-
-    fun calculate(formula: String): Int {
-        val numbers = formula.split("+", "-", "*").map { it.toInt() }
-        val operators = formula.split("0", "1", "2", "3", "4", "5", "6", "7", "8", "9")
-            .filter { it.isNotEmpty() }
-        var newAmount = 0
-
-        numbers.forEachIndexed { index, number ->
-            if (index == 0) {
-                newAmount += number
-            } else {
-                when (operators[index - 1]) {
-                    "+" -> newAmount += number
-                    "-" -> newAmount -= number
-                    "*" -> newAmount *= number
-                }
-            }
-        }
-        return newAmount
-    }
 }
